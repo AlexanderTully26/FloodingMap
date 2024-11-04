@@ -1,0 +1,46 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the terrain data while ignoring anything thats not a line containing numbers
+def load_terrain_data(file_path):
+    data = []
+    max_len = 0  # max row length
+
+    with open(file_path, 'r') as file:
+        for line in file:
+            try:
+                row = list(map(float, line.split()))
+                data.append(row)
+                max_len = max(max_len, len(row))  # Update maximum row length
+            except ValueError:
+                # Ignore lines with non-numeric values
+                continue
+    
+    # Pad rows to ensure consistent row length
+    for i in range(len(data)):
+        if len(data[i]) < max_len:
+            data[i].extend([np.nan] * (max_len - len(data[i])))  # Pad with NaN
+
+    return np.array(data)
+
+# Load the corrected terrain data
+terrain_data = load_terrain_data('/Users/alexander.tully26/Downloads/NewYorkCityHuge.terrain.txt')
+
+def plot_topographic_map(flood_level):
+    # Set up plot
+    plt.figure(figsize=(10, 8))
+    plt.imshow(terrain_data, cmap='terrain', origin='lower')
+    
+    # add flooding 
+    flooded_areas = np.where(terrain_data <= flood_level, 1, np.nan)
+    plt.imshow(flooded_areas, cmap='Blues', alpha=0.5, origin='lower')
+
+    # labels and color bar
+    plt.colorbar(label="Elevation (m)")
+    plt.title(f"Topigrphical Map with Flood Level at {flood_level} m")
+    plt.xlabel("X Coordinate")
+    plt.ylabel("Y Coordinate")
+    plt.show()
+
+# Example usage
+plot_topographic_map(flood_level=50)
